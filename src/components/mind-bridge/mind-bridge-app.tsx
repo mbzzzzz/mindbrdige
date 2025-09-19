@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { READING_LEVELS, SUMMARY_LENGTHS, TARGET_LANGUAGES } from '@/lib/constants';
+import { SUMMARY_LENGTHS, TARGET_LANGUAGES } from '@/lib/constants';
 import { BookOpenCheck, Languages, Blocks, Bot, SpellCheck, Search, Lightbulb, Copy, Settings, Moon, Sun } from 'lucide-react';
 
 const initialState: ActionState = {
@@ -33,22 +33,6 @@ export default function MindBridgeApp() {
   const [readingLevel, setReadingLevel] = React.useState([5]);
   const [theme, setTheme] = React.useState('light');
 
-  const handleAction = async (action: (prevState: ActionState, formData: FormData) => Promise<ActionState>, formData: FormData) => {
-    setIsLoading(true);
-    setOutputText('');
-    const result = await action(initialState, formData);
-    if (result.success) {
-      setOutputText(result.data || '');
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'An error occurred',
-        description: result.message,
-      });
-    }
-    setIsLoading(false);
-  };
-  
   const [adaptState, adaptAction] = useActionState(handleAdapt, initialState);
   const [summarizeState, summarizeAction] = useActionState(handleSummarize, initialState);
   const [translateState, translateAction] = useActionState(handleTranslate, initialState);
@@ -57,12 +41,13 @@ export default function MindBridgeApp() {
   const [explainState, explainAction] = useActionState(handleExplain, initialState);
 
   const handleEffect = (state: ActionState, title: string) => {
-    if (state.success) {
-      setOutputText(state.data || '');
-    } else if (state.message) {
+    if (state.success === false && state.message) {
       toast({ variant: 'destructive', title: `${title} Error`, description: state.message });
+      setIsLoading(false);
+    } else if (state.success) {
+      setOutputText(state.data || '');
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }
 
   React.useEffect(() => { handleEffect(adaptState, 'Adapt'); }, [adaptState]);
@@ -79,19 +64,19 @@ export default function MindBridgeApp() {
 
   const createFormAction = (action: (formData: FormData) => void, fields: Record<string, string | number>) => (formData: FormData) => {
     setIsLoading(true);
-    formData.set('text', inputText);
+    setOutputText('');
     for (const key in fields) {
       formData.set(key, String(fields[key]));
     }
     action(formData);
   };
   
-  const adaptFormAction = createFormAction(adaptAction, { readingLevel: readingLevel[0] });
-  const summarizeFormAction = summarizeAction;
-  const translateFormAction = createFormAction(translateAction, {});
-  const proofreadFormAction = createFormAction(proofreadAction, {});
-  const analyzeFormAction = createFormAction(analyzeAction, {});
-  const explainFormAction = createFormAction(explainAction, {});
+  const adaptFormAction = createFormAction(adaptAction, { readingLevel: readingLevel[0], text: inputText });
+  const summarizeFormAction = createFormAction(summarizeAction, {});
+  const translateFormAction = createFormAction(translateAction, { text: inputText });
+  const proofreadFormAction = createFormAction(proofreadAction, { text: inputText });
+  const analyzeFormAction = createFormAction(analyzeAction, { text: inputText });
+  const explainFormAction = createFormAction(explainAction, { text: inputText });
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(outputText).then(() => {
@@ -118,7 +103,7 @@ export default function MindBridgeApp() {
         </SidebarHeader>
         <SidebarContent>
           <Tabs defaultValue="simplify" className="flex flex-col h-full p-2">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid grid-cols-2 h-auto">
               <TabsTrigger value="simplify"><BookOpenCheck className="w-4 h-4 mr-1" />Simplify</TabsTrigger>
               <TabsTrigger value="summarize"><Blocks className="w-4 h-4 mr-1"/>Summarize</TabsTrigger>
               <TabsTrigger value="translate"><Languages className="w-4 h-4 mr-1"/>Translate</TabsTrigger>
@@ -145,7 +130,7 @@ export default function MindBridgeApp() {
                     <span className='text-sm text-red-600'>Complex</span>
                   </div>
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>Simplify Text</Button>
+                <Button type="submit" className="w-full" disabled={isLoading || !inputText}>Simplify Text</Button>
               </form>
             </TabsContent>
             <TabsContent value="summarize" className="flex-1 mt-4">
@@ -185,22 +170,22 @@ export default function MindBridgeApp() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>Translate Text</Button>
+                <Button type="submit" className="w-full" disabled={isLoading || !inputText}>Translate Text</Button>
               </form>
             </TabsContent>
             <TabsContent value="proofread" className="flex-1 mt-4">
               <form action={proofreadFormAction} className="space-y-4">
-                <Button type="submit" className="w-full" disabled={isLoading}>Proofread Text</Button>
+                <Button type="submit" className="w-full" disabled={isLoading || !inputText}>Proofread Text</Button>
               </form>
             </TabsContent>
             <TabsContent value="analyze" className="flex-1 mt-4">
                 <form action={analyzeFormAction} className="space-y-4">
-                    <Button type="submit" className="w-full" disabled={isLoading}>Analyze Content</Button>
+                    <Button type="submit" className="w-full" disabled={isLoading || !inputText}>Analyze Content</Button>
                 </form>
             </TabsContent>
             <TabsContent value="explain" className="flex-1 mt-4">
                 <form action={explainFormAction} className="space-y-4">
-                    <Button type="submit" className="w-full" disabled={isLoading}>Explain Concepts</Button>
+                    <Button type="submit" className="w-full" disabled={isLoading || !inputText}>Explain Concepts</Button>
                 </form>
             </TabsContent>
              <TabsContent value="settings" className="flex-1 mt-4">
@@ -231,7 +216,7 @@ export default function MindBridgeApp() {
               </CardHeader>
               <CardContent className="flex-1 flex">
                 <Textarea
-                  placeholder="Paste your text here..."
+                  placeholder="Paste your text here to begin..."
                   className="flex-1 resize-none"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}

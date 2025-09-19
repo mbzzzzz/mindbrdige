@@ -11,7 +11,7 @@ import type { ActionState } from '@/lib/types';
 import { READING_LEVEL_MAP } from './constants';
 
 const adaptSchema = z.object({
-  text: z.string(),
+  text: z.string().min(1, 'Text to adapt is required.'),
   readingLevel: z.coerce.number().min(1).max(10),
 });
 
@@ -90,7 +90,7 @@ export async function handleSummarize(
 }
 
 const translateSchema = z.object({
-  text: z.string().min(1, 'Content is required.'),
+  text: z.string().min(1, 'Content to translate is required.'),
   targetLanguage: z.string(),
 });
 
@@ -128,7 +128,7 @@ export async function handleTranslate(
 }
 
 const proofreadSchema = z.object({
-  text: z.string().min(1, 'Text is required.'),
+  text: z.string().min(1, 'Text to proofread is required.'),
 });
 
 export async function handleProofread(
@@ -165,7 +165,7 @@ export async function handleProofread(
 }
 
 const analyzeSchema = z.object({
-    text: z.string().min(1, 'Text is required.'),
+    text: z.string().min(1, 'Text to analyze is required.'),
 });
 
 export async function handleAnalyze(
@@ -202,7 +202,7 @@ export async function handleAnalyze(
 }
 
 const explainSchema = z.object({
-    text: z.string().min(1, 'Text is required.'),
+    text: z.string().min(1, 'Text to explain is required.'),
 });
 
 export async function handleExplain(
@@ -237,3 +237,5 @@ export async function handleExplain(
         };
     }
 }
+
+    
