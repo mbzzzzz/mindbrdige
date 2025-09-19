@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { SUMMARY_LENGTHS, TARGET_LANGUAGES } from '@/lib/constants';
+import { DEMO_CONTENT } from '@/lib/demo-content';
 import { BookOpenCheck, Languages, Blocks, Bot, SpellCheck, Search, Lightbulb, Copy, Settings, Moon, Sun } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 
@@ -94,6 +95,11 @@ export default function MindBridgeApp() {
       toast({ variant: 'destructive', title: 'Failed to copy', description: 'Could not copy the text to your clipboard.' });
     });
   };
+
+  const handleDemoContentChange = (value: string) => {
+    const content = DEMO_CONTENT.find(item => item.value === value)?.content || '';
+    setInputText(content);
+  }
 
   const inputWordCount = React.useMemo(() => inputText.trim().split(/\s+/).filter(Boolean).length, [inputText]);
   const inputCharCount = React.useMemo(() => inputText.length, [inputText]);
@@ -222,11 +228,23 @@ export default function MindBridgeApp() {
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card className="flex flex-col">
                 <CardHeader>
-                  <CardTitle>Original Content</CardTitle>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Original Content</span>
+                    <Select onValueChange={handleDemoContentChange}>
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Load a Demo..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {DEMO_CONTENT.map(item => (
+                          <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-1 flex">
                   <Textarea
-                    placeholder="Paste your text here to begin..."
+                    placeholder="Paste your text here or load a demo to begin..."
                     className="flex-1 resize-none"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
