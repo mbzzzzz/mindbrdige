@@ -1,16 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "MindBridge AI",
+  "name": "MindBridge AI Companion",
   "version": "1.0",
-  "description": "Your AI-powered web accessibility assistant.",
+  "description": "Select text on any page and send it to MindBridge AI for transformation.",
   "permissions": [
-    "storage",
     "activeTab",
-    "scripting"
+    "storage",
+    "scripting",
+    "contextMenus"
   ],
-  "action": {
-    "default_popup": "popup.html"
-  },
   "background": {
     "service_worker": "background.js"
   },
@@ -24,9 +22,7 @@
       ]
     }
   ],
-  "icons": {
-    "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
+  "action": {
+    "default_popup": "popup.html"
   }
 }

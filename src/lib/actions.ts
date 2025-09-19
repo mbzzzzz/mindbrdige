@@ -11,7 +11,7 @@ import type { ActionState } from '@/lib/types';
 import { READING_LEVEL_MAP } from './constants';
 
 const adaptSchema = z.object({
-  text: z.string().min(1, 'Text to adapt is required.'),
+  text: z.string(),
   readingLevel: z.coerce.number().min(1).max(10),
 });
 
@@ -32,6 +32,10 @@ export async function handleAdapt(
     }
     
     const { text, readingLevel } = validatedFields.data;
+
+    if (!text) {
+        return { success: false, message: 'Text to adapt is required.'}
+    }
     
     const levelValue = READING_LEVEL_MAP[readingLevel] || 'general audience';
 
@@ -90,7 +94,7 @@ export async function handleSummarize(
 }
 
 const translateSchema = z.object({
-  text: z.string().min(1, 'Content to translate is required.'),
+  text: z.string(),
   targetLanguage: z.string(),
 });
 
@@ -111,6 +115,9 @@ export async function handleTranslate(
     }
     
     const { text, targetLanguage } = validatedFields.data;
+     if (!text) {
+        return { success: false, message: 'Content to translate is required.'}
+    }
     const result = await translateWebpage({ text, targetLanguage });
 
     return {
@@ -128,7 +135,7 @@ export async function handleTranslate(
 }
 
 const proofreadSchema = z.object({
-  text: z.string().min(1, 'Text to proofread is required.'),
+  text: z.string(),
 });
 
 export async function handleProofread(
@@ -148,6 +155,9 @@ export async function handleProofread(
     }
 
     const { text } = validatedFields.data;
+    if (!text) {
+        return { success: false, message: 'Text to proofread is required.'}
+    }
     const result = await proofreadText({ text });
 
     return {
@@ -165,7 +175,7 @@ export async function handleProofread(
 }
 
 const analyzeSchema = z.object({
-    text: z.string().min(1, 'Text to analyze is required.'),
+    text: z.string(),
 });
 
 export async function handleAnalyze(
@@ -185,6 +195,9 @@ export async function handleAnalyze(
         }
 
         const { text } = validatedFields.data;
+        if (!text) {
+            return { success: false, message: 'Text to analyze is required.'}
+        }
         const result = await analyzeContent({ text });
 
         return {
@@ -202,7 +215,7 @@ export async function handleAnalyze(
 }
 
 const explainSchema = z.object({
-    text: z.string().min(1, 'Text to explain is required.'),
+    text: z.string(),
 });
 
 export async function handleExplain(
@@ -222,6 +235,9 @@ export async function handleExplain(
         }
 
         const { text } = validatedFields.data;
+        if (!text) {
+            return { success: false, message: 'Text to explain is required.'}
+        }
         const result = await explainConcepts({ text });
 
         return {
@@ -237,5 +253,3 @@ export async function handleExplain(
         };
     }
 }
-
-    

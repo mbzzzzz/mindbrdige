@@ -19,6 +19,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { SUMMARY_LENGTHS, TARGET_LANGUAGES } from '@/lib/constants';
 import { BookOpenCheck, Languages, Blocks, Bot, SpellCheck, Search, Lightbulb, Copy, Settings, Moon, Sun } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
 const initialState: ActionState = {
   success: false,
@@ -27,6 +28,7 @@ const initialState: ActionState = {
 
 export default function MindBridgeApp() {
   const { toast } = useToast();
+  const searchParams = useSearchParams();
   const [inputText, setInputText] = React.useState('');
   const [outputText, setOutputText] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
@@ -39,6 +41,13 @@ export default function MindBridgeApp() {
   const [proofreadState, proofreadAction] = useActionState(handleProofread, initialState);
   const [analyzeState, analyzeAction] = useActionState(handleAnalyze, initialState);
   const [explainState, explainAction] = useActionState(handleExplain, initialState);
+
+  React.useEffect(() => {
+    const textFromExtension = searchParams.get('text');
+    if (textFromExtension) {
+      setInputText(textFromExtension);
+    }
+  }, [searchParams]);
 
   const handleEffect = (state: ActionState, title: string) => {
     if (state.success === false && state.message) {
@@ -209,59 +218,61 @@ export default function MindBridgeApp() {
       </Sidebar>
       <SidebarInset>
         <main className="h-screen flex flex-col p-4 gap-4">
-          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle>Original Content</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 flex">
-                <Textarea
-                  placeholder="Paste your text here to begin..."
-                  className="flex-1 resize-none"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                />
-              </CardContent>
-              <CardFooter className='text-sm text-muted-foreground justify-end gap-4'>
-                <span>Words: {inputWordCount}</span>
-                <span>Characters: {inputCharCount}</span>
-              </CardFooter>
-            </Card>
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Bot className="w-6 h-6 text-primary" />
-                    Transformed Content
-                  </div>
-                  <Button variant="ghost" size="icon" onClick={copyToClipboard} disabled={!outputText || isLoading}>
-                    <Copy className="w-5 h-5" />
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 flex">
-                {isLoading ? (
-                  <div className="w-full space-y-2">
-                    <Skeleton className="h-6 w-3/4" />
-                    <Skeleton className="h-6 w-full" />
-                    <Skeleton className="h-6 w-full" />
-                    <Skeleton className="h-6 w-5/6" />
-                  </div>
-                ) : (
+          <React.Suspense fallback={<div>Loading...</div>}>
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="flex flex-col">
+                <CardHeader>
+                  <CardTitle>Original Content</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1 flex">
                   <Textarea
-                    readOnly
-                    placeholder="Your AI-powered result will appear here."
-                    className="flex-1 resize-none bg-secondary/30"
-                    value={outputText}
+                    placeholder="Paste your text here to begin..."
+                    className="flex-1 resize-none"
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
                   />
-                )}
-              </CardContent>
-              <CardFooter className='text-sm text-muted-foreground justify-end gap-4'>
-                <span>Words: {outputWordCount}</span>
-                <span>Characters: {outputCharCount}</span>
-              </CardFooter>
-            </Card>
-          </div>
+                </CardContent>
+                <CardFooter className='text-sm text-muted-foreground justify-end gap-4'>
+                  <span>Words: {inputWordCount}</span>
+                  <span>Characters: {inputCharCount}</span>
+                </CardFooter>
+              </Card>
+              <Card className="flex flex-col">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Bot className="w-6 h-6 text-primary" />
+                      Transformed Content
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={copyToClipboard} disabled={!outputText || isLoading}>
+                      <Copy className="w-5 h-5" />
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1 flex">
+                  {isLoading ? (
+                    <div className="w-full space-y-2">
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-6 w-full" />
+                      <Skeleton className="h-6 w-full" />
+                      <Skeleton className="h-6 w-5/6" />
+                    </div>
+                  ) : (
+                    <Textarea
+                      readOnly
+                      placeholder="Your AI-powered result will appear here."
+                      className="flex-1 resize-none bg-secondary/30"
+                      value={outputText}
+                    />
+                  )}
+                </CardContent>
+                <CardFooter className='text-sm text-muted-foreground justify-end gap-4'>
+                  <span>Words: {outputWordCount}</span>
+                  <span>Characters: {outputCharCount}</span>
+                </CardFooter>
+              </Card>
+            </div>
+          </React.Suspense>
         </main>
       </SidebarInset>
     </SidebarProvider>

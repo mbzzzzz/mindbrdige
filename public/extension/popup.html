@@ -5,16 +5,28 @@
   <style>
     body {
       font-family: sans-serif;
-      width: 300px;
+      width: 200px;
       padding: 10px;
+      text-align: center;
     }
-    h1 {
-      font-size: 1.2em;
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background-color: #6699CC;
+      color: white;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #5a88b5;
     }
   </style>
 </head>
 <body>
-  <h1>MindBridge AI</h1>
-  <p>The popup UI will be built here.</p>
+  <h3>MindBridge AI</h3>
+  <button id="openApp">Open MindBridge App</button>
+  <script src="popup.js"></script>
 </body>
 </html>
