@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useFormState } from 'react-dom';
 import { useToast } from '@/hooks/use-toast';
 import type { ActionState } from '@/lib/types';
-import { handleAdapt, handleSummarize, handleTranslate, handleProofread } from '@/lib/actions';
+import { handleAdapt, handleSummarize, handleTranslate, handleProofread, handleAnalyze, handleExplain } from '@/lib/actions';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarInset } from '@/components/ui/sidebar';
 import { Logo } from '@/components/icons/logo';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { READING_LEVELS, SUMMARY_LENGTHS, TARGET_LANGUAGES } from '@/lib/constants';
-import { BookOpenCheck, Languages, Blocks, Bot, SpellCheck } from 'lucide-react';
+import { BookOpenCheck, Languages, Blocks, Bot, SpellCheck, Search, Lightbulb } from 'lucide-react';
 
 const initialState: ActionState = {
   success: false,
@@ -55,6 +55,8 @@ export default function MindBridgeApp() {
   const [summarizeState, summarizeAction] = useFormState(handleSummarize, initialState);
   const [translateState, translateAction] = useFormState(handleTranslate, initialState);
   const [proofreadState, proofreadAction] = useFormState(handleProofread, initialState);
+  const [analyzeState, analyzeAction] = useFormState(handleAnalyze, initialState);
+  const [explainState, explainAction] = useFormState(handleExplain, initialState);
 
 
   React.useEffect(() => {
@@ -92,6 +94,24 @@ export default function MindBridgeApp() {
     }
     setIsLoading(false);
   }, [proofreadState]);
+
+  React.useEffect(() => {
+    if (analyzeState.success) {
+      setOutputText(analyzeState.data || '');
+    } else if (analyzeState.message) {
+      toast({ variant: 'destructive', title: 'Analyze Error', description: analyzeState.message });
+    }
+    setIsLoading(false);
+  }, [analyzeState]);
+
+  React.useEffect(() => {
+    if (explainState.success) {
+      setOutputText(explainState.data || '');
+    } else if (explainState.message) {
+      toast({ variant: 'destructive', title: 'Explain Error', description: explainState.message });
+    }
+    setIsLoading(false);
+  }, [explainState]);
   
   const adaptFormAction = (formData: FormData) => {
     setIsLoading(true);
@@ -116,6 +136,18 @@ export default function MindBridgeApp() {
     proofreadAction(formData);
   };
 
+  const analyzeFormAction = (formData: FormData) => {
+    setIsLoading(true);
+    formData.set('text', inputText);
+    analyzeAction(formData);
+  };
+
+  const explainFormAction = (formData: FormData) => {
+    setIsLoading(true);
+    formData.set('text', inputText);
+    explainAction(formData);
+  };
+
 
   return (
     <SidebarProvider>
@@ -128,11 +160,13 @@ export default function MindBridgeApp() {
         </SidebarHeader>
         <SidebarContent>
           <Tabs defaultValue="simplify" className="flex flex-col h-full p-2">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="simplify"><BookOpenCheck className="w-4 h-4 mr-1" />Simplify</TabsTrigger>
               <TabsTrigger value="summarize"><Blocks className="w-4 h-4 mr-1"/>Summarize</TabsTrigger>
               <TabsTrigger value="translate"><Languages className="w-4 h-4 mr-1"/>Translate</TabsTrigger>
               <TabsTrigger value="proofread"><SpellCheck className="w-4 h-4 mr-1"/>Proofread</TabsTrigger>
+              <TabsTrigger value="analyze"><Search className="w-4 h-4 mr-1"/>Analyze</TabsTrigger>
+              <TabsTrigger value="explain"><Lightbulb className="w-4 h-4 mr-1"/>Explain</TabsTrigger>
             </TabsList>
             <TabsContent value="simplify" className="flex-1 mt-4">
               <form action={adaptFormAction} className="space-y-4">
@@ -196,6 +230,16 @@ export default function MindBridgeApp() {
               <form action={proofreadFormAction} className="space-y-4">
                 <Button type="submit" className="w-full" disabled={isLoading}>Proofread Text</Button>
               </form>
+            </TabsContent>
+            <TabsContent value="analyze" className="flex-1 mt-4">
+                <form action={analyzeFormAction} className="space-y-4">
+                    <Button type="submit" className="w-full" disabled={isLoading}>Analyze Content</Button>
+                </form>
+            </TabsContent>
+            <TabsContent value="explain" className="flex-1 mt-4">
+                <form action={explainFormAction} className="space-y-4">
+                    <Button type="submit" className="w-full" disabled={isLoading}>Explain Concepts</Button>
+                </form>
             </TabsContent>
           </Tabs>
         </SidebarContent>

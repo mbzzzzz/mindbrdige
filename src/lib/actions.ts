@@ -5,6 +5,8 @@ import { adaptContentToReadingLevel } from '@/ai/flows/adapt-content-to-reading-
 import { summarizeWebpage } from '@/ai/flows/summarize-webpage';
 import { translateWebpage } from '@/ai/flows/translate-webpage';
 import { proofreadText } from '@/ai/flows/proofread-text';
+import { analyzeContent } from '@/ai/flows/analyze-content';
+import { explainConcepts } from '@/ai/flows/explain-concepts';
 import type { ActionState } from '@/lib/types';
 
 const adaptSchema = z.object({
@@ -156,4 +158,78 @@ export async function handleProofread(
       message: 'Failed to proofread text. Please try again.',
     };
   }
+}
+
+const analyzeSchema = z.object({
+    text: z.string().min(1, 'Text is required.'),
+});
+
+export async function handleAnalyze(
+    prevState: ActionState,
+    formData: FormData
+): Promise<ActionState> {
+    try {
+        const validatedFields = analyzeSchema.safeParse(
+            Object.fromEntries(formData.entries())
+        );
+
+        if (!validatedFields.success) {
+            return {
+                success: false,
+                message: 'Invalid input.',
+            };
+        }
+
+        const { text } = validatedFields.data;
+        const result = await analyzeContent({ text });
+
+        return {
+            success: true,
+            message: 'Content analyzed successfully.',
+            data: result.analysis,
+        };
+    } catch (error) {
+        console.error(error);
+        return {
+            success: false,
+            message: 'Failed to analyze content. Please try again.',
+        };
+    }
+}
+
+const explainSchema = z.object({
+    text: z.string().min(1, 'Text is required.'),
+});
+
+export async function handleExplain(
+    prevState: ActionState,
+    formData: FormData
+): Promise<ActionState> {
+    try {
+        const validatedFields = explainSchema.safeParse(
+            Object.fromEntries(formData.entries())
+        );
+
+        if (!validatedFields.success) {
+            return {
+                success: false,
+                message: 'Invalid input.',
+            };
+        }
+
+        const { text } = validatedFields.data;
+        const result = await explainConcepts({ text });
+
+        return {
+            success: true,
+            message: 'Concepts explained successfully.',
+            data: result.explanation,
+        };
+    } catch (error) {
+        console.error(error);
+        return {
+            success: false,
+            message: 'Failed to explain concepts. Please try again.',
+        };
+    }
 }
