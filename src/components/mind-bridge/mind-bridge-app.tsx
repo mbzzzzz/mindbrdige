@@ -227,7 +227,7 @@ export default function MindBridgeApp() {
       <SidebarInset>
         <main className="h-screen flex flex-col p-4 gap-4">
           <React.Suspense fallback={<div>Loading...</div>}>
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex-1 grid grid-cols-2 gap-4">
               <Card className="flex flex-col">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
