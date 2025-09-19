@@ -9,7 +9,6 @@ import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarInset }
 import { Logo } from '@/components/icons/logo';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
@@ -21,6 +20,7 @@ import { SUMMARY_LENGTHS, TARGET_LANGUAGES } from '@/lib/constants';
 import { DEMO_CONTENT } from '@/lib/demo-content';
 import { Zap, FileText, Globe, CheckCircle, Search, Lightbulb, Copy, Settings, Moon, Sun, Bot } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+import { useTypewriter } from '@/hooks/use-typewriter';
 
 const initialState: ActionState = {
   success: false,
@@ -31,10 +31,12 @@ export default function MindBridgeApp() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const [inputText, setInputText] = React.useState('');
-  const [outputText, setOutputText] = React.useState('');
+  const [rawOutputText, setRawOutputText] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [readingLevel, setReadingLevel] = React.useState([5]);
   const [theme, setTheme] = React.useState('light');
+  
+  const outputText = useTypewriter(rawOutputText, 25);
 
   const [adaptState, adaptAction] = useActionState(handleAdapt, initialState);
   const [summarizeState, summarizeAction] = useActionState(handleSummarize, initialState);
@@ -55,7 +57,7 @@ export default function MindBridgeApp() {
       toast({ variant: 'destructive', title: `${title} Error`, description: state.message });
       setIsLoading(false);
     } else if (state.success) {
-      setOutputText(state.data || '');
+      setRawOutputText(state.data || '');
       setIsLoading(false);
     }
   }
@@ -74,7 +76,7 @@ export default function MindBridgeApp() {
 
   const createFormAction = (action: (formData: FormData) => void, fields: Record<string, string | number>) => (formData: FormData) => {
     setIsLoading(true);
-    setOutputText('');
+    setRawOutputText('');
     for (const key in fields) {
       formData.set(key, String(fields[key]));
     }
@@ -89,7 +91,7 @@ export default function MindBridgeApp() {
   const explainFormAction = createFormAction(explainAction, { text: inputText });
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(outputText).then(() => {
+    navigator.clipboard.writeText(rawOutputText).then(() => {
       toast({ title: 'Copied!', description: 'The transformed content has been copied to your clipboard.' });
     }, () => {
       toast({ variant: 'destructive', title: 'Failed to copy', description: 'Could not copy the text to your clipboard.' });
@@ -262,27 +264,18 @@ export default function MindBridgeApp() {
                       <Bot className="w-6 h-6 text-primary" />
                       Transformed Content
                     </div>
-                    <Button variant="ghost" size="icon" onClick={copyToClipboard} disabled={!outputText || isLoading}>
+                    <Button variant="ghost" size="icon" onClick={copyToClipboard} disabled={!rawOutputText || isLoading}>
                       <Copy className="w-5 h-5" />
                     </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-1 flex">
-                  {isLoading ? (
-                    <div className="w-full space-y-4 pt-2">
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-5/6" />
-                    </div>
-                  ) : (
-                    <Textarea
-                      readOnly
-                      placeholder="Your AI-powered result will appear here."
-                      className="flex-1 resize-none bg-secondary/30"
-                      value={outputText}
-                    />
-                  )}
+                  <Textarea
+                    readOnly
+                    placeholder={isLoading ? "Thinking..." : "Your AI-powered result will appear here."}
+                    className="flex-1 resize-none bg-secondary/30"
+                    value={outputText}
+                  />
                 </CardContent>
                 <CardFooter className='text-sm text-muted-foreground justify-end gap-4'>
                   <span>Words: {outputWordCount}</span>
