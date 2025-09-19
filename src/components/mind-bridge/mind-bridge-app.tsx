@@ -269,11 +269,11 @@ export default function MindBridgeApp() {
                 </CardHeader>
                 <CardContent className="flex-1 flex">
                   {isLoading ? (
-                    <div className="w-full space-y-2">
-                      <Skeleton className="h-6 w-3/4" />
-                      <Skeleton className="h-6 w-full" />
-                      <Skeleton className="h-6 w-full" />
-                      <Skeleton className="h-6 w-5/6" />
+                    <div className="w-full space-y-4 pt-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-5/6" />
                     </div>
                   ) : (
                     <Textarea
