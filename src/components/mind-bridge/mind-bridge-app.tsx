@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useFormState } from 'react-dom';
 import { useToast } from '@/hooks/use-toast';
 import type { ActionState } from '@/lib/types';
-import { handleAdapt, handleSummarize, handleTranslate } from '@/lib/actions';
+import { handleAdapt, handleSummarize, handleTranslate, handleProofread } from '@/lib/actions';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarInset } from '@/components/ui/sidebar';
 import { Logo } from '@/components/icons/logo';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { READING_LEVELS, SUMMARY_LENGTHS, TARGET_LANGUAGES } from '@/lib/constants';
-import { BookOpenCheck, Languages, Blocks, Bot } from 'lucide-react';
+import { BookOpenCheck, Languages, Blocks, Bot, SpellCheck } from 'lucide-react';
 
 const initialState: ActionState = {
   success: false,
@@ -54,6 +54,8 @@ export default function MindBridgeApp() {
   const [adaptState, adaptAction] = useFormState(handleAdapt, initialState);
   const [summarizeState, summarizeAction] = useFormState(handleSummarize, initialState);
   const [translateState, translateAction] = useFormState(handleTranslate, initialState);
+  const [proofreadState, proofreadAction] = useFormState(handleProofread, initialState);
+
 
   React.useEffect(() => {
     if (adaptState.success) {
@@ -81,6 +83,15 @@ export default function MindBridgeApp() {
     }
     setIsLoading(false);
   }, [translateState]);
+
+  React.useEffect(() => {
+    if (proofreadState.success) {
+      setOutputText(proofreadState.data || '');
+    } else if (proofreadState.message) {
+      toast({ variant: 'destructive', title: 'Proofread Error', description: proofreadState.message });
+    }
+    setIsLoading(false);
+  }, [proofreadState]);
   
   const adaptFormAction = (formData: FormData) => {
     setIsLoading(true);
@@ -99,6 +110,12 @@ export default function MindBridgeApp() {
     translateAction(formData);
   };
 
+  const proofreadFormAction = (formData: FormData) => {
+    setIsLoading(true);
+    formData.set('text', inputText);
+    proofreadAction(formData);
+  };
+
 
   return (
     <SidebarProvider>
@@ -111,10 +128,11 @@ export default function MindBridgeApp() {
         </SidebarHeader>
         <SidebarContent>
           <Tabs defaultValue="simplify" className="flex flex-col h-full p-2">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="simplify"><BookOpenCheck className="w-4 h-4 mr-1" />Simplify</TabsTrigger>
               <TabsTrigger value="summarize"><Blocks className="w-4 h-4 mr-1"/>Summarize</TabsTrigger>
               <TabsTrigger value="translate"><Languages className="w-4 h-4 mr-1"/>Translate</TabsTrigger>
+              <TabsTrigger value="proofread"><SpellCheck className="w-4 h-4 mr-1"/>Proofread</TabsTrigger>
             </TabsList>
             <TabsContent value="simplify" className="flex-1 mt-4">
               <form action={adaptFormAction} className="space-y-4">
@@ -172,6 +190,11 @@ export default function MindBridgeApp() {
                   </Select>
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>Translate Text</Button>
+              </form>
+            </TabsContent>
+            <TabsContent value="proofread" className="flex-1 mt-4">
+              <form action={proofreadFormAction} className="space-y-4">
+                <Button type="submit" className="w-full" disabled={isLoading}>Proofread Text</Button>
               </form>
             </TabsContent>
           </Tabs>

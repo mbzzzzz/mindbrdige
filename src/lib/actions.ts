@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { adaptContentToReadingLevel } from '@/ai/flows/adapt-content-to-reading-level';
 import { summarizeWebpage } from '@/ai/flows/summarize-webpage';
 import { translateWebpage } from '@/ai/flows/translate-webpage';
+import { proofreadText } from '@/ai/flows/proofread-text';
 import type { ActionState } from '@/lib/types';
 
 const adaptSchema = z.object({
@@ -116,6 +117,43 @@ export async function handleTranslate(
     return {
       success: false,
       message: 'Failed to translate content. Please try again.',
+    };
+  }
+}
+
+const proofreadSchema = z.object({
+  text: z.string().min(1, 'Text is required.'),
+});
+
+export async function handleProofread(
+  prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  try {
+    const validatedFields = proofreadSchema.safeParse(
+      Object.fromEntries(formData.entries())
+    );
+
+    if (!validatedFields.success) {
+      return {
+        success: false,
+        message: 'Invalid input.',
+      };
+    }
+
+    const { text } = validatedFields.data;
+    const result = await proofreadText({ text });
+
+    return {
+      success: true,
+      message: 'Text proofread successfully.',
+      data: result.proofreadText,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: 'Failed to proofread text. Please try again.',
     };
   }
 }
