@@ -19,7 +19,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { SUMMARY_LENGTHS, TARGET_LANGUAGES } from '@/lib/constants';
 import { DEMO_CONTENT } from '@/lib/demo-content';
-import { BookOpenCheck, Languages, Blocks, Bot, SpellCheck, Search, Lightbulb, Copy, Settings, Moon, Sun } from 'lucide-react';
+import { Zap, FileText, Globe, CheckCircle, Search, Lightbulb, Copy, Settings, Moon, Sun, Bot } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 
 const initialState: ActionState = {
@@ -119,10 +119,10 @@ export default function MindBridgeApp() {
         <SidebarContent>
           <Tabs defaultValue="simplify" className="flex flex-col h-full p-2">
             <TabsList className="grid grid-cols-2 h-auto">
-              <TabsTrigger value="simplify"><BookOpenCheck className="w-4 h-4 mr-1" />Simplify</TabsTrigger>
-              <TabsTrigger value="summarize"><Blocks className="w-4 h-4 mr-1"/>Summarize</TabsTrigger>
-              <TabsTrigger value="translate"><Languages className="w-4 h-4 mr-1"/>Translate</TabsTrigger>
-              <TabsTrigger value="proofread"><SpellCheck className="w-4 h-4 mr-1"/>Proofread</TabsTrigger>
+              <TabsTrigger value="simplify"><Zap className="w-4 h-4 mr-1" />Simplify</TabsTrigger>
+              <TabsTrigger value="summarize"><FileText className="w-4 h-4 mr-1"/>Summarize</TabsTrigger>
+              <TabsTrigger value="translate"><Globe className="w-4 h-4 mr-1"/>Translate</TabsTrigger>
+              <TabsTrigger value="proofread"><CheckCircle className="w-4 h-4 mr-1"/>Proofread</TabsTrigger>
               <TabsTrigger value="analyze"><Search className="w-4 h-4 mr-1"/>Analyze</TabsTrigger>
               <TabsTrigger value="explain"><Lightbulb className="w-4 h-4 mr-1"/>Explain</TabsTrigger>
               <TabsTrigger value="settings"><Settings className="w-4 h-4 mr-1"/>Settings</TabsTrigger>
