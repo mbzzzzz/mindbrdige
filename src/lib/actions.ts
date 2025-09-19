@@ -8,10 +8,11 @@ import { proofreadText } from '@/ai/flows/proofread-text';
 import { analyzeContent } from '@/ai/flows/analyze-content';
 import { explainConcepts } from '@/ai/flows/explain-concepts';
 import type { ActionState } from '@/lib/types';
+import { READING_LEVEL_MAP } from './constants';
 
 const adaptSchema = z.object({
-  content: z.string().min(1, 'Content is required.'),
-  readingLevel: z.string(),
+  text: z.string(),
+  readingLevel: z.coerce.number().min(1).max(10),
 });
 
 export async function handleAdapt(
@@ -30,8 +31,11 @@ export async function handleAdapt(
       };
     }
     
-    const { content, readingLevel } = validatedFields.data;
-    const result = await adaptContentToReadingLevel({ content, readingLevel });
+    const { text, readingLevel } = validatedFields.data;
+    
+    const levelValue = READING_LEVEL_MAP[readingLevel] || 'general audience';
+
+    const result = await adaptContentToReadingLevel({ content: text, readingLevel: levelValue });
 
     return {
       success: true,
