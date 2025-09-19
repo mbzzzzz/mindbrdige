@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { ActionState } from '@/lib/types';
 import { handleAdapt, handleSummarize, handleTranslate, handleProofread, handleAnalyze, handleExplain } from '@/lib/actions';
@@ -51,12 +51,12 @@ export default function MindBridgeApp() {
     setIsLoading(false);
   };
 
-  const [adaptState, adaptAction] = useFormState(handleAdapt, initialState);
-  const [summarizeState, summarizeAction] = useFormState(handleSummarize, initialState);
-  const [translateState, translateAction] = useFormState(handleTranslate, initialState);
-  const [proofreadState, proofreadAction] = useFormState(handleProofread, initialState);
-  const [analyzeState, analyzeAction] = useFormState(handleAnalyze, initialState);
-  const [explainState, explainAction] = useFormState(handleExplain, initialState);
+  const [adaptState, adaptAction] = useActionState(handleAdapt, initialState);
+  const [summarizeState, summarizeAction] = useActionState(handleSummarize, initialState);
+  const [translateState, translateAction] = useActionState(handleTranslate, initialState);
+  const [proofreadState, proofreadAction] = useActionState(handleProofread, initialState);
+  const [analyzeState, analyzeAction] = useActionState(handleAnalyze, initialState);
+  const [explainState, explainAction] = useActionState(handleExplain, initialState);
 
 
   React.useEffect(() => {
