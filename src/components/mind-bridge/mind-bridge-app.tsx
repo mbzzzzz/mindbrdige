@@ -18,9 +18,13 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { SUMMARY_LENGTHS, TARGET_LANGUAGES } from '@/lib/constants';
 import { DEMO_CONTENT } from '@/lib/demo-content';
-import { Zap, FileText, Globe, CheckCircle, Search, Lightbulb, Copy, Settings, Moon, Sun, Bot } from 'lucide-react';
+import { Zap, FileText, Globe, CheckCircle, Search, Lightbulb, Copy, Settings, Moon, Sun, Bot, Upload } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { useTypewriter } from '@/hooks/use-typewriter';
+import pdf from 'pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js';
+pdf.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
+import pdfParse from 'pdf-parse';
+import mammoth from 'mammoth';
+
 
 const initialState: ActionState = {
   success: false,
@@ -31,13 +35,12 @@ export default function MindBridgeApp() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const [inputText, setInputText] = React.useState('');
-  const [rawOutputText, setRawOutputText] = React.useState('');
+  const [outputText, setOutputText] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [readingLevel, setReadingLevel] = React.useState([5]);
   const [theme, setTheme] = React.useState('light');
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   
-  const outputText = useTypewriter(rawOutputText, 25);
-
   const [adaptState, adaptAction] = useActionState(handleAdapt, initialState);
   const [summarizeState, summarizeAction] = useActionState(handleSummarize, initialState);
   const [translateState, translateAction] = useActionState(handleTranslate, initialState);
@@ -57,7 +60,7 @@ export default function MindBridgeApp() {
       toast({ variant: 'destructive', title: `${title} Error`, description: state.message });
       setIsLoading(false);
     } else if (state.success) {
-      setRawOutputText(state.data || '');
+      setOutputText(state.data || '');
       setIsLoading(false);
     }
   }
@@ -76,7 +79,7 @@ export default function MindBridgeApp() {
 
   const createFormAction = (action: (formData: FormData) => void, fields: Record<string, string | number>) => (formData: FormData) => {
     setIsLoading(true);
-    setRawOutputText('');
+    setOutputText('');
     for (const key in fields) {
       formData.set(key, String(fields[key]));
     }
@@ -91,7 +94,7 @@ export default function MindBridgeApp() {
   const explainFormAction = createFormAction(explainAction, { text: inputText });
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(rawOutputText).then(() => {
+    navigator.clipboard.writeText(outputText).then(() => {
       toast({ title: 'Copied!', description: 'The transformed content has been copied to your clipboard.' });
     }, () => {
       toast({ variant: 'destructive', title: 'Failed to copy', description: 'Could not copy the text to your clipboard.' });
@@ -102,6 +105,39 @@ export default function MindBridgeApp() {
     const content = DEMO_CONTENT.find(item => item.value === value)?.content || '';
     setInputText(content);
   }
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsLoading(true);
+    try {
+      if (file.type === 'text/plain') {
+        const text = await file.text();
+        setInputText(text);
+      } else if (file.type === 'application/pdf') {
+        const arrayBuffer = await file.arrayBuffer();
+        const data = await pdfParse(arrayBuffer);
+        setInputText(data.text);
+      } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        setInputText(result.value);
+      } else {
+        toast({ variant: 'destructive', title: 'Unsupported File Type', description: 'Please upload a .txt, .pdf, or .docx file.' });
+      }
+    } catch (error) {
+      console.error('Error reading file:', error);
+      toast({ variant: 'destructive', title: 'Error Reading File', description: 'There was a problem processing your file.' });
+    } finally {
+      setIsLoading(false);
+      // Reset file input
+      if(fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
 
   const inputWordCount = React.useMemo(() => inputText.trim().split(/\s+/).filter(Boolean).length, [inputText]);
   const inputCharCount = React.useMemo(() => inputText.length, [inputText]);
@@ -175,8 +211,7 @@ export default function MindBridgeApp() {
             <TabsContent value="translate" className="flex-1 mt-4">
               <form action={translateFormAction} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="targetLanguage">Target Language</Label>
-                  <Select name="targetLanguage" defaultValue="Spanish">
+                  <Label htmlFor="targetLanguage">Target Language</Label>                  <Select name="targetLanguage" defaultValue="Spanish">
                     <SelectTrigger id="targetLanguage">
                       <SelectValue placeholder="Select language" />
                     </SelectTrigger>
@@ -232,21 +267,34 @@ export default function MindBridgeApp() {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>Original Content</span>
-                    <Select onValueChange={handleDemoContentChange}>
-                      <SelectTrigger className="w-[200px]">
-                        <SelectValue placeholder="Load a Demo..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {DEMO_CONTENT.map(item => (
-                          <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="flex items-center gap-2">
+                       <Button variant="outline" size="icon" onClick={() => fileInputRef.current?.click()}>
+                          <Upload className="w-5 h-5" />
+                          <span className="sr-only">Upload File</span>
+                        </Button>
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileUpload}
+                          className="hidden"
+                          accept=".txt,.pdf,.docx"
+                        />
+                      <Select onValueChange={handleDemoContentChange}>
+                        <SelectTrigger className="w-[200px]">
+                          <SelectValue placeholder="Load a Demo..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DEMO_CONTENT.map(item => (
+                            <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-1 flex">
                   <Textarea
-                    placeholder="Paste your text here or load a demo to begin..."
+                    placeholder="Paste your text, upload a file, or load a demo to begin..."
                     className="flex-1 resize-none"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
@@ -264,18 +312,27 @@ export default function MindBridgeApp() {
                       <Bot className="w-6 h-6 text-primary" />
                       Transformed Content
                     </div>
-                    <Button variant="ghost" size="icon" onClick={copyToClipboard} disabled={!rawOutputText || isLoading}>
+                    <Button variant="ghost" size="icon" onClick={copyToClipboard} disabled={!outputText || isLoading}>
                       <Copy className="w-5 h-5" />
                     </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-1 flex">
-                  <Textarea
-                    readOnly
-                    placeholder={isLoading ? "Thinking..." : "Your AI-powered result will appear here."}
-                    className="flex-1 resize-none bg-secondary/30"
-                    value={outputText}
-                  />
+                  {isLoading ? (
+                     <div className="w-full space-y-2 animate-pulse">
+                        <div className="h-4 bg-muted/50 rounded w-5/6"></div>
+                        <div className="h-4 bg-muted/50 rounded w-full"></div>
+                        <div className="h-4 bg-muted/50 rounded w-4/6"></div>
+                        <div className="h-4 bg-muted/50 rounded w-full"></div>
+                     </div>
+                  ) : (
+                    <Textarea
+                        readOnly
+                        placeholder="Your AI-powered result will appear here."
+                        className="flex-1 resize-none bg-secondary/30"
+                        value={outputText}
+                    />
+                  )}
                 </CardContent>
                 <CardFooter className='text-sm text-muted-foreground justify-end gap-4'>
                   <span>Words: {outputWordCount}</span>
