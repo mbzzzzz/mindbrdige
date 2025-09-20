@@ -20,11 +20,6 @@ import { SUMMARY_LENGTHS, TARGET_LANGUAGES } from '@/lib/constants';
 import { DEMO_CONTENT } from '@/lib/demo-content';
 import { Zap, FileText, Globe, CheckCircle, Search, Lightbulb, Copy, Settings, Moon, Sun, Bot, Upload } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import pdf from 'pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js';
-pdf.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
-import pdfParse from 'pdf-parse';
-import mammoth from 'mammoth';
-
 
 const initialState: ActionState = {
   success: false,
@@ -116,10 +111,14 @@ export default function MindBridgeApp() {
         const text = await file.text();
         setInputText(text);
       } else if (file.type === 'application/pdf') {
+        const pdfParse = (await import('pdf-parse')).default;
+        const pdf = await import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js');
+        pdf.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
         const arrayBuffer = await file.arrayBuffer();
         const data = await pdfParse(arrayBuffer);
         setInputText(data.text);
       } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        const mammoth = (await import('mammoth')).default;
         const arrayBuffer = await file.arrayBuffer();
         const result = await mammoth.extractRawText({ arrayBuffer });
         setInputText(result.value);
@@ -156,7 +155,7 @@ export default function MindBridgeApp() {
         </SidebarHeader>
         <SidebarContent>
           <Tabs defaultValue="simplify" className="flex flex-col h-full p-2">
-            <TabsList className="grid grid-cols-2 h-auto">
+            <TabsList className="grid grid-cols-2 h-auto flex-wrap">
               <TabsTrigger value="simplify"><Zap className="w-4 h-4 mr-1" />Simplify</TabsTrigger>
               <TabsTrigger value="summarize"><FileText className="w-4 h-4 mr-1"/>Summarize</TabsTrigger>
               <TabsTrigger value="translate"><Globe className="w-4 h-4 mr-1"/>Translate</TabsTrigger>
