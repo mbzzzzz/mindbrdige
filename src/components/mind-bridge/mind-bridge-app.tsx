@@ -20,6 +20,8 @@ import { SUMMARY_LENGTHS, TARGET_LANGUAGES } from '@/lib/constants';
 import { DEMO_CONTENT } from '@/lib/demo-content';
 import { Zap, FileText, Globe, CheckCircle, Search, Lightbulb, Copy, Settings, Moon, Sun, Bot, Upload } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 const initialState: ActionState = {
   success: false,
@@ -146,16 +148,16 @@ export default function MindBridgeApp() {
 
   return (
     <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader className="border-b">
+      <Sidebar variant="floating" collapsible="icon" className="backdrop-blur-xl bg-sidebar border-sidebar-border">
+        <SidebarHeader className="border-b border-sidebar-border">
           <div className="flex items-center gap-2">
             <Logo className="w-8 h-8 text-primary" />
-            <span className="text-lg font-semibold">MindBridge AI</span>
+            <span className="text-lg font-semibold">MindBridge</span>
           </div>
         </SidebarHeader>
         <SidebarContent>
           <Tabs defaultValue="simplify" className="flex flex-col h-full p-2">
-            <TabsList className="grid grid-cols-2 h-auto flex-wrap">
+            <TabsList className="grid grid-cols-2 h-auto flex-wrap bg-transparent">
               <TabsTrigger value="simplify"><Zap className="w-4 h-4 mr-1" />Simplify</TabsTrigger>
               <TabsTrigger value="summarize"><FileText className="w-4 h-4 mr-1"/>Summarize</TabsTrigger>
               <TabsTrigger value="translate"><Globe className="w-4 h-4 mr-1"/>Translate</TabsTrigger>
@@ -182,7 +184,7 @@ export default function MindBridgeApp() {
                     <span className='text-sm text-red-600'>Complex</span>
                   </div>
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading || !inputText}>Simplify Text</Button>
+                <Button type="submit" className="w-full shadow-primary-glow" disabled={isLoading || !inputText}>Simplify Text</Button>
               </form>
             </TabsContent>
             <TabsContent value="summarize" className="flex-1 mt-4">
@@ -204,7 +206,7 @@ export default function MindBridgeApp() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>Summarize URL</Button>
+                <Button type="submit" className="w-full shadow-primary-glow" disabled={isLoading}>Summarize URL</Button>
               </form>
             </TabsContent>
             <TabsContent value="translate" className="flex-1 mt-4">
@@ -221,22 +223,22 @@ export default function MindBridgeApp() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading || !inputText}>Translate Text</Button>
+                <Button type="submit" className="w-full shadow-primary-glow" disabled={isLoading || !inputText}>Translate Text</Button>
               </form>
             </TabsContent>
             <TabsContent value="proofread" className="flex-1 mt-4">
               <form action={proofreadFormAction} className="space-y-4">
-                <Button type="submit" className="w-full" disabled={isLoading || !inputText}>Proofread Text</Button>
+                <Button type="submit" className="w-full shadow-primary-glow" disabled={isLoading || !inputText}>Proofread Text</Button>
               </form>
             </TabsContent>
             <TabsContent value="analyze" className="flex-1 mt-4">
                 <form action={analyzeFormAction} className="space-y-4">
-                    <Button type="submit" className="w-full" disabled={isLoading || !inputText}>Analyze Content</Button>
+                    <Button type="submit" className="w-full shadow-primary-glow" disabled={isLoading || !inputText}>Analyze Content</Button>
                 </form>
             </TabsContent>
             <TabsContent value="explain" className="flex-1 mt-4">
                 <form action={explainFormAction} className="space-y-4">
-                    <Button type="submit" className="w-full" disabled={isLoading || !inputText}>Explain Concepts</Button>
+                    <Button type="submit" className="w-full shadow-primary-glow" disabled={isLoading || !inputText}>Explain Concepts</Button>
                 </form>
             </TabsContent>
              <TabsContent value="settings" className="flex-1 mt-4">
@@ -259,10 +261,10 @@ export default function MindBridgeApp() {
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
-        <main className="h-screen flex flex-col p-4 gap-4">
+        <main className="h-screen flex flex-col p-4 md:p-8 gap-4">
           <React.Suspense fallback={<div>Loading...</div>}>
-            <div className="flex-1 grid grid-cols-2 gap-4">
-              <Card className="flex flex-col">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="flex flex-col bg-card backdrop-blur-xl border-border/50">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>Original Content</span>
@@ -294,7 +296,7 @@ export default function MindBridgeApp() {
                 <CardContent className="flex-1 flex">
                   <Textarea
                     placeholder="Paste your text, upload a file, or load a demo to begin..."
-                    className="flex-1 resize-none"
+                    className="flex-1 resize-none bg-transparent"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                   />
@@ -304,7 +306,7 @@ export default function MindBridgeApp() {
                   <span>Characters: {inputCharCount}</span>
                 </CardFooter>
               </Card>
-              <Card className="flex flex-col">
+              <Card className="flex flex-col bg-card backdrop-blur-xl border-border/50">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -318,17 +320,17 @@ export default function MindBridgeApp() {
                 </CardHeader>
                 <CardContent className="flex-1 flex">
                   {isLoading ? (
-                     <div className="w-full space-y-2 animate-pulse">
-                        <div className="h-4 bg-muted/50 rounded w-5/6"></div>
-                        <div className="h-4 bg-muted/50 rounded w-full"></div>
-                        <div className="h-4 bg-muted/50 rounded w-4/6"></div>
-                        <div className="h-4 bg-muted/50 rounded w-full"></div>
+                     <div className="w-full space-y-2">
+                        <Skeleton className="h-4 w-5/6" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-4/6" />
+                        <Skeleton className="h-4 w-full" />
                      </div>
                   ) : (
                     <Textarea
                         readOnly
                         placeholder="Your AI-powered result will appear here."
-                        className="flex-1 resize-none bg-secondary/30"
+                        className="flex-1 resize-none bg-transparent"
                         value={outputText}
                     />
                   )}
