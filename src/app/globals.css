@@ -93,3 +93,31 @@
     background-image: linear-gradient(to bottom, rgb(var(--background-start-rgb)), rgb(var(--background-end-rgb)));
   }
 }
+
+@layer utilities {
+  .glass {
+    @apply backdrop-blur-xl border border-border/60;
+    background-color: hsl(var(--card) / 0.6);
+  }
+
+  .shadow-primary-glow {
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.25), 0 10px 30px -10px hsl(var(--primary) / 0.35);
+  }
+
+  .grid-radial-bg {
+    background-image:
+      radial-gradient(60rem 60rem at 120% -10%, hsl(var(--primary) / 0.15), transparent 60%),
+      radial-gradient(40rem 40rem at -10% 110%, hsl(var(--accent) / 0.12), transparent 60%),
+      linear-gradient(to bottom, rgb(var(--background-start-rgb)), rgb(var(--background-end-rgb)));
+  }
+
+  .card-hover {
+    transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 35px -15px hsl(var(--foreground) / 0.15);
+    border-color: hsl(var(--border) / 0.8);
+  }
+}

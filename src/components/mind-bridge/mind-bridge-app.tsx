@@ -148,23 +148,23 @@ export default function MindBridgeApp() {
 
   return (
     <SidebarProvider>
-      <Sidebar variant="floating" collapsible="icon" className="backdrop-blur-xl bg-sidebar border-sidebar-border">
+      <Sidebar variant="floating" collapsible="icon" className="glass bg-sidebar border-sidebar-border">
         <SidebarHeader className="border-b border-sidebar-border">
           <div className="flex items-center gap-2">
-            <Logo className="w-8 h-8 text-primary" />
-            <span className="text-lg font-semibold">MindBridge</span>
+            <Logo className="w-7 h-7 text-primary" />
+            <span className="text-base font-semibold tracking-tight">MindBridge</span>
           </div>
         </SidebarHeader>
         <SidebarContent>
-          <Tabs defaultValue="simplify" className="flex flex-col h-full p-2">
-            <TabsList className="grid grid-cols-2 h-auto flex-wrap bg-transparent">
-              <TabsTrigger value="simplify"><Zap className="w-4 h-4 mr-1" />Simplify</TabsTrigger>
-              <TabsTrigger value="summarize"><FileText className="w-4 h-4 mr-1"/>Summarize</TabsTrigger>
-              <TabsTrigger value="translate"><Globe className="w-4 h-4 mr-1"/>Translate</TabsTrigger>
-              <TabsTrigger value="proofread"><CheckCircle className="w-4 h-4 mr-1"/>Proofread</TabsTrigger>
-              <TabsTrigger value="analyze"><Search className="w-4 h-4 mr-1"/>Analyze</TabsTrigger>
-              <TabsTrigger value="explain"><Lightbulb className="w-4 h-4 mr-1"/>Explain</TabsTrigger>
-              <TabsTrigger value="settings"><Settings className="w-4 h-4 mr-1"/>Settings</TabsTrigger>
+          <Tabs defaultValue="simplify" className="flex flex-col h-full p-3">
+            <TabsList className="grid grid-cols-2 h-auto flex-wrap bg-transparent gap-2">
+              <TabsTrigger value="simplify" className="data-[state=active]:shadow-primary-glow"><Zap className="w-4 h-4 mr-1" />Simplify</TabsTrigger>
+              <TabsTrigger value="summarize" className="data-[state=active]:shadow-primary-glow"><FileText className="w-4 h-4 mr-1"/>Summarize</TabsTrigger>
+              <TabsTrigger value="translate" className="data-[state=active]:shadow-primary-glow"><Globe className="w-4 h-4 mr-1"/>Translate</TabsTrigger>
+              <TabsTrigger value="proofread" className="data-[state=active]:shadow-primary-glow"><CheckCircle className="w-4 h-4 mr-1"/>Proofread</TabsTrigger>
+              <TabsTrigger value="analyze" className="data-[state=active]:shadow-primary-glow"><Search className="w-4 h-4 mr-1"/>Analyze</TabsTrigger>
+              <TabsTrigger value="explain" className="data-[state=active]:shadow-primary-glow"><Lightbulb className="w-4 h-4 mr-1"/>Explain</TabsTrigger>
+              <TabsTrigger value="settings" className="data-[state=active]:shadow-primary-glow"><Settings className="w-4 h-4 mr-1"/>Settings</TabsTrigger>
             </TabsList>
             <TabsContent value="simplify" className="flex-1 mt-4">
               <form action={adaptFormAction} className="space-y-4">
@@ -261,13 +261,13 @@ export default function MindBridgeApp() {
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
-        <main className="h-screen flex flex-col p-4 md:p-8 gap-4">
+        <main className="min-h-[calc(100vh-3.5rem)] flex flex-col gap-6">
           <React.Suspense fallback={<div>Loading...</div>}>
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="flex flex-col bg-card backdrop-blur-xl border-border/50">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="flex flex-col glass card-hover">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span>Original Content</span>
+                    <span className="bg-gradient-to-r from-foreground to-muted-foreground/80 bg-clip-text text-transparent">Original Content</span>
                     <div className="flex items-center gap-2">
                        <Button variant="outline" size="icon" onClick={() => fileInputRef.current?.click()}>
                           <Upload className="w-5 h-5" />
@@ -306,12 +306,12 @@ export default function MindBridgeApp() {
                   <span>Characters: {inputCharCount}</span>
                 </CardFooter>
               </Card>
-              <Card className="flex flex-col bg-card backdrop-blur-xl border-border/50">
+              <Card className="flex flex-col glass card-hover">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Bot className="w-6 h-6 text-primary" />
-                      Transformed Content
+                      <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Transformed Content</span>
                     </div>
                     <Button variant="ghost" size="icon" onClick={copyToClipboard} disabled={!outputText || isLoading}>
                       <Copy className="w-5 h-5" />
