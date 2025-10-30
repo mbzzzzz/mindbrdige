@@ -8,8 +8,8 @@
  * - ExplainConceptsOutput - The return type for the explainConcepts function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { generateText } from '@/ai/gemini';
+import { z } from 'zod';
 
 const ExplainConceptsInputSchema = z.object({
   text: z.string().describe('The text with concepts to be explained.'),
@@ -22,25 +22,9 @@ const ExplainConceptsOutputSchema = z.object({
 export type ExplainConceptsOutput = z.infer<typeof ExplainConceptsOutputSchema>;
 
 export async function explainConcepts(input: ExplainConceptsInput): Promise<ExplainConceptsOutput> {
-  return explainConceptsFlow(input);
+  const parsed = ExplainConceptsInputSchema.parse(input);
+  const prompt = `Generate simple explanations for complex terms in: ${parsed.text}
+Include examples and analogies for better understanding.`;
+  const text = await generateText(prompt);
+  return { explanation: text.trim() };
 }
-
-const prompt = ai.definePrompt({
-  name: 'explainConceptsPrompt',
-  input: {schema: ExplainConceptsInputSchema},
-  output: {schema: ExplainConceptsOutputSchema},
-  prompt: `Generate simple explanations for complex terms in: {{{text}}}
-Include examples and analogies for better understanding.`,
-});
-
-const explainConceptsFlow = ai.defineFlow(
-  {
-    name: 'explainConceptsFlow',
-    inputSchema: ExplainConceptsInputSchema,
-    outputSchema: ExplainConceptsOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);

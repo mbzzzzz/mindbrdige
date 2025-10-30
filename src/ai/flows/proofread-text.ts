@@ -8,8 +8,8 @@
  * - ProofreadTextOutput - The return type for the proofreadText function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { generateText } from '@/ai/gemini';
+import { z } from 'zod';
 
 const ProofreadTextInputSchema = z.object({
   text: z.string().describe('The text to be proofread.'),
@@ -22,29 +22,13 @@ const ProofreadTextOutputSchema = z.object({
 export type ProofreadTextOutput = z.infer<typeof ProofreadTextOutputSchema>;
 
 export async function proofreadText(input: ProofreadTextInput): Promise<ProofreadTextOutput> {
-  return proofreadTextFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'proofreadTextPrompt',
-  input: {schema: ProofreadTextInputSchema},
-  output: {schema: ProofreadTextOutputSchema},
-  prompt: `You are an expert proofreader. You will be given a text and you will correct any grammar and spelling mistakes.
+  const parsed = ProofreadTextInputSchema.parse(input);
+  const prompt = `You are an expert proofreader. Correct grammar and spelling.
 
 Original Text:
-{{{text}}}
+${parsed.text}
 
-Proofread Text:`,
-});
-
-const proofreadTextFlow = ai.defineFlow(
-  {
-    name: 'proofreadTextFlow',
-    inputSchema: ProofreadTextInputSchema,
-    outputSchema: ProofreadTextOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);
+Proofread Text:`;
+  const text = await generateText(prompt);
+  return { proofreadText: text.trim() };
+}

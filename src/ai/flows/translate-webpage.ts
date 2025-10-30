@@ -8,8 +8,8 @@
  * - TranslateWebpageOutput - The return type for the translateWebpage function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { generateText } from '@/ai/gemini';
+import { z } from 'zod';
 
 const TranslateWebpageInputSchema = z.object({
   text: z.string().describe('The text content of the webpage to translate.'),
@@ -23,24 +23,10 @@ const TranslateWebpageOutputSchema = z.object({
 export type TranslateWebpageOutput = z.infer<typeof TranslateWebpageOutputSchema>;
 
 export async function translateWebpage(input: TranslateWebpageInput): Promise<TranslateWebpageOutput> {
-  return translateWebpageFlow(input);
+  const parsed = TranslateWebpageInputSchema.parse(input);
+  const prompt = `Translate the following text into ${parsed.targetLanguage}.
+
+${parsed.text}`;
+  const text = await generateText(prompt);
+  return { translatedText: text.trim() };
 }
-
-const prompt = ai.definePrompt({
-  name: 'translateWebpagePrompt',
-  input: {schema: TranslateWebpageInputSchema},
-  output: {schema: TranslateWebpageOutputSchema},
-  prompt: `Translate the following text into {{{targetLanguage}}}.\n\n{{{text}}} `,
-});
-
-const translateWebpageFlow = ai.defineFlow(
-  {
-    name: 'translateWebpageFlow',
-    inputSchema: TranslateWebpageInputSchema,
-    outputSchema: TranslateWebpageOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);

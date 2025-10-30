@@ -8,8 +8,8 @@
  * - SummarizeWebpageOutput - The return type for the summarizeWebpage function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { generateText } from '@/ai/gemini';
+import { z } from 'zod';
 
 const SummarizeWebpageInputSchema = z.object({
   url: z.string().describe('The URL of the webpage to summarize.'),
@@ -23,28 +23,10 @@ const SummarizeWebpageOutputSchema = z.object({
 export type SummarizeWebpageOutput = z.infer<typeof SummarizeWebpageOutputSchema>;
 
 export async function summarizeWebpage(input: SummarizeWebpageInput): Promise<SummarizeWebpageOutput> {
-  return summarizeWebpageFlow(input);
+  const parsed = SummarizeWebpageInputSchema.parse(input);
+  const prompt = `You are an expert summarizer. Summarize the content found at URL in a ${parsed.length} summary.
+
+URL: ${parsed.url}`;
+  const text = await generateText(prompt);
+  return { summary: text.trim() };
 }
-
-const prompt = ai.definePrompt({
-  name: 'summarizeWebpagePrompt',
-  input: {schema: SummarizeWebpageInputSchema},
-  output: {schema: SummarizeWebpageOutputSchema},
-  prompt: `You are an expert summarizer. You will be given the content of a webpage and you will summarize it.
-
-The webpage URL is: {{{url}}}
-
-Summarize the webpage in a {{{length}}} length summary.`,
-});
-
-const summarizeWebpageFlow = ai.defineFlow(
-  {
-    name: 'summarizeWebpageFlow',
-    inputSchema: SummarizeWebpageInputSchema,
-    outputSchema: SummarizeWebpageOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);

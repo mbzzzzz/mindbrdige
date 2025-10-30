@@ -7,8 +7,8 @@
  * - AdaptContentToReadingLevelOutput - The return type for the adaptContentToReadingLevel function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { generateText } from '@/ai/gemini';
+import { z } from 'zod';
 
 const AdaptContentToReadingLevelInputSchema = z.object({
   content: z.string().describe('The web content to be adapted.'),
@@ -34,30 +34,14 @@ export type AdaptContentToReadingLevelOutput = z.infer<
 export async function adaptContentToReadingLevel(
   input: AdaptContentToReadingLevelInput
 ): Promise<AdaptContentToReadingLevelOutput> {
-  return adaptContentToReadingLevelFlow(input);
+  const parsed = AdaptContentToReadingLevelInputSchema.parse(input);
+  const prompt = `You are an expert content adapter. You will rewrite the provided web content to match the reading level requested by the user.
+
+Original Content: ${parsed.content}
+
+Desired Reading Level: ${parsed.readingLevel}
+
+Adapted Content:`;
+  const text = await generateText(prompt);
+  return { adaptedContent: text.trim() };
 }
-
-const prompt = ai.definePrompt({
-  name: 'adaptContentToReadingLevelPrompt',
-  input: {schema: AdaptContentToReadingLevelInputSchema},
-  output: {schema: AdaptContentToReadingLevelOutputSchema},
-  prompt: `You are an expert content adapter. You will rewrite the provided web content to match the reading level requested by the user.
-
-Original Content: {{{content}}}
-
-Desired Reading Level: {{{readingLevel}}}
-
-Adapted Content:`, //Crucially important: this prompt must end with `Adapted Content:` and nothing else
-});
-
-const adaptContentToReadingLevelFlow = ai.defineFlow(
-  {
-    name: 'adaptContentToReadingLevelFlow',
-    inputSchema: AdaptContentToReadingLevelInputSchema,
-    outputSchema: AdaptContentToReadingLevelOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);

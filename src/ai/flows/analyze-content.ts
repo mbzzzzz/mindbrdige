@@ -8,8 +8,8 @@
  * - AnalyzeContentOutput - The return type for the analyzeContent function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { generateText } from '@/ai/gemini';
+import { z } from 'zod';
 
 const AnalyzeContentInputSchema = z.object({
   text: z.string().describe('The text to be analyzed.'),
@@ -22,30 +22,14 @@ const AnalyzeContentOutputSchema = z.object({
 export type AnalyzeContentOutput = z.infer<typeof AnalyzeContentOutputSchema>;
 
 export async function analyzeContent(input: AnalyzeContentInput): Promise<AnalyzeContentOutput> {
-  return analyzeContentFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'analyzeContentPrompt',
-  input: {schema: AnalyzeContentInputSchema},
-  output: {schema: AnalyzeContentOutputSchema},
-  prompt: `Analyze this content for:
+  const parsed = AnalyzeContentInputSchema.parse(input);
+  const prompt = `Analyze this content for:
 1. Reading difficulty level (1-10)
 2. Key concepts that need explanation
 3. Accessibility improvements needed
 4. Best transformation approach
 
-Content: {{{text}}}`,
-});
-
-const analyzeContentFlow = ai.defineFlow(
-  {
-    name: 'analyzeContentFlow',
-    inputSchema: AnalyzeContentInputSchema,
-    outputSchema: AnalyzeContentOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);
+Content: ${parsed.text}`;
+  const text = await generateText(prompt);
+  return { analysis: text.trim() };
+}
